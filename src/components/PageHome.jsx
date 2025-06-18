@@ -7,7 +7,7 @@ const PageHome = () => {
                 <div className="flex justify-center">
                     <img src="imgs/logo_saude.png" alt="" className="w-[100px]" />
                 </div>
-                <nav className="grid gap-3 mt-6 *:leading-[40px] *:border *:border-[#E0E0E0] *:pl-4 *:rounded *:text-[#424242] *:duration-150">
+                <nav className="grid gap-3 mt-6 *:leading-[40px] *:border *:border-[#E0E0E0] *:pl-4 *:rounded *:text-[#424242] *:duration-150 *:font-semibold">
                     <NavLink end className="hover:bg-[#1D8BCC] hover:text-white hover:border-[#1A7CBB] [&.active]:bg-[#1D8BCC] [&.active]:text-white" to="/medicos">Médicos</NavLink>
                     <NavLink end className="hover:bg-[#1D8BCC] hover:text-white hover:border-[#1A7CBB] [&.active]:bg-[#1D8BCC] [&.active]:text-white" to="/pacientes">Pacientes</NavLink>
                 </nav>
