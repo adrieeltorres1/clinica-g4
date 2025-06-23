@@ -1,23 +1,29 @@
-import { BrowserRouter, Route, Routes } from "react-router";
+import { ConfigProvider } from 'antd';
+import ptBR from 'antd/locale/pt_BR';
+import dayjs from 'dayjs';
+import 'dayjs/locale/pt-br';
+import { BrowserRouter, Route, Routes } from "react-router-dom"; 
 import PageHome from "./components/PageHome";
 import Medicos from "./pages/Medicos";
 import Pacientes from "./pages/Pacientes";
 import Planos from "./pages/Planos";
 
+dayjs.locale('pt-br');
+
 const App = () => {
-  return (  
-    <>
-     <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<PageHome />}>
-          <Route path="/medicos" element={<Medicos />}/>
-          <Route path="/pacientes" element={<Pacientes />}/>
-          <Route path="/planos" element={<Planos />}/>
-        </Route>
-      </Routes>
-     </BrowserRouter>
-    </>
+  return (
+    <ConfigProvider locale={ptBR}>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<PageHome />}>
+            <Route path="/medicos" element={<Medicos />} />
+            <Route path="/pacientes" element={<Pacientes />} />
+            <Route path="/planos" element={<Planos />} />
+          </Route>
+        </Routes>
+      </BrowserRouter>
+    </ConfigProvider>
   );
 }
- 
+
 export default App;

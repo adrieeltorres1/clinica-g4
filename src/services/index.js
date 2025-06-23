@@ -50,3 +50,28 @@ export const deletePaciente = async (cpf) => {
     });
     return data;
 };
+
+export const fetchPlanos = async () => {
+    const {data} = await API.get('/planos');
+    return data;
+}
+
+export const createPlano = async (planoData) => {
+    const {data} = await API.post('/planos/criarplano', planoData);
+    return data;
+}
+
+
+export const updatePlano = async (id, planoData) => {
+    const {data} = await API.put(`/planos/editarplanos/${id}`, planoData);
+    return data;
+}
+
+export const deletePlano = async (nome_plano) => {
+    const {data} = await API.delete('/planos/deletarplanos', {
+        data: {
+            nome_plano
+        }
+    });
+    return data;
+}

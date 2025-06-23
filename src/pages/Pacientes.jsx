@@ -1,153 +1,202 @@
+import InputMask from 'react-input-mask';
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Table, message, Modal, Drawer, Form, Input, DatePicker, Button as AntButton } from 'antd';
+import { Table, message, Modal, Drawer, Form, Input, DatePicker, Button as AntButton, Select } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
-import { fetchPacientes, createPaciente, updatePaciente, deletePaciente } from '../services';
+import { fetchPacientes, createPaciente, updatePaciente, deletePaciente, fetchPlanos } from '../services';
 import dayjs from 'dayjs';
 
+const formatarCPF = (cpf) => {
+    if (!cpf) return '';
+    const apenasDigitos = cpf.replace(/\D/g, '');
+    if (apenasDigitos.length !== 11) return cpf;
+    return apenasDigitos.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+};
+
 const Pacientes = () => {
-    const [isDrawerOpen, setIsDrawerOpen] = useState(false);
-    const [editingPaciente, setEditingPaciente] = useState(null);
+    const [drawerAberto, setDrawerAberto] = useState(false);
+    const [pacienteEmEdicao, setPacienteEmEdicao] = useState(null);
     const [form] = Form.useForm();
     const queryClient = useQueryClient();
 
-    const { data: pacientes, isLoading, isError, error } = useQuery({
+    const { data: pacientes, isLoading: carregandoPacientes, isError: ocorreuErro, error: erro } = useQuery({
         queryKey: ['pacientes'],
         queryFn: fetchPacientes
     });
 
-    const onMutationSuccess = (successMessage) => {
-        message.success(successMessage);
-        setIsDrawerOpen(false);
-        setEditingPaciente(null);
+    const { data: planos, isLoading: carregandoPlanos } = useQuery({
+        queryKey: ['planos'],
+        queryFn: fetchPlanos
+    });
+
+    const aoMutarComSucesso = (mensagemDeSucesso) => {
+        message.success(mensagemDeSucesso);
+        setDrawerAberto(false);
+        setPacienteEmEdicao(null);
         form.resetFields();
         queryClient.invalidateQueries({ queryKey: ['pacientes'] });
     };
 
-    const createMutation = useMutation({
+    const mutacaoCriar = useMutation({
         mutationFn: createPaciente,
-        onSuccess: () => onMutationSuccess('Paciente criado com sucesso!'),
-        onError: (err) => message.error(`Erro ao criar paciente: ${err.message}`),
+        onSuccess: () => aoMutarComSucesso('Paciente criado com sucesso!'),
+        onError: (err) => message.error(err.response?.data?.message || 'Erro ao criar paciente'),
     });
 
-    const updateMutation = useMutation({
+    const mutacaoAtualizar = useMutation({
         mutationFn: updatePaciente,
-        onSuccess: () => onMutationSuccess('Paciente atualizado com sucesso!'),
-        onError: (err) => message.error(`Erro ao atualizar paciente: ${err.message}`),
+        onSuccess: () => aoMutarComSucesso('Paciente atualizado com sucesso!'),
+        onError: (err) => message.error(err.response?.data?.message || 'Erro ao atualizar paciente'),
     });
 
-    const deleteMutation = useMutation({
+    const mutacaoDeletar = useMutation({
         mutationFn: deletePaciente,
-        onSuccess: (data) => onMutationSuccess(data || 'Paciente deletado com sucesso!'),
-        onError: (err) => message.error(`Erro ao deletar paciente: ${err.message}`),
+        onSuccess: (dados) => aoMutarComSucesso(dados || 'Paciente deletado com sucesso!'),
+        onError: (err) => message.error(err.response?.data?.message || 'Erro ao deletar paciente'),
     });
 
-    const handleAdd = () => {
-        setEditingPaciente(null);
+    const lidarComAdicionar = () => {
+        setPacienteEmEdicao(null);
         form.resetFields();
-        setIsDrawerOpen(true);
+        setDrawerAberto(true);
     };
 
-    const handleEdit = (record) => {
-        setEditingPaciente(record);
+    const lidarComEdicao = (registro) => {
+        setPacienteEmEdicao(registro);
         form.setFieldsValue({
-            ...record,
-            data_nascimento: record.data_nascimento ? dayjs(record.data_nascimento) : null,
+            ...registro,
+            cpf_paciente: formatarCPF(registro.cpf_paciente),
+            data_nascimento: registro.data_nascimento ? dayjs(registro.data_nascimento) : null,
         });
-        setIsDrawerOpen(true);
+        setDrawerAberto(true);
     };
 
-    const handleDelete = (record) => {
+    const lidarComDelecao = (registro) => {
         Modal.confirm({
             title: 'Você tem certeza que quer deletar este paciente?',
-            content: `Nome: ${record.nome_paciente}\nCPF: ${record.cpf_paciente}`,
+            content: `Nome: ${registro.nome_paciente}\nCPF: ${formatarCPF(registro.cpf_paciente)}`,
             okText: 'Sim, deletar',
             okType: 'danger',
             cancelText: 'Cancelar',
             onOk: () => {
-                deleteMutation.mutate(record.cpf_paciente);
+                const cpfLimpo = registro.cpf_paciente.replace(/\D/g, '');
+                mutacaoDeletar.mutate(cpfLimpo);
             },
         });
     };
 
-    const onDrawerClose = () => {
-        setIsDrawerOpen(false);
-        setEditingPaciente(null);
+    const aoFecharDrawer = () => {
+        setDrawerAberto(false);
+        setPacienteEmEdicao(null);
         form.resetFields();
     };
 
-    const onFormSubmit = (values) => {
-        const pacienteData = {
-            ...values,
-            data_nascimento: values.data_nascimento.format('YYYY-MM-DD'),
+    const aoSubmeterFormulario = (valores) => {
+        const dadosDoPaciente = {
+            ...valores,
+            cpf_paciente: valores.cpf_paciente.replace(/\D/g, ''),
+            data_nascimento: valores.data_nascimento ? valores.data_nascimento.format('YYYY-MM-DD') : null,
         };
 
-        if (editingPaciente) {
-            updateMutation.mutate({ ...pacienteData, cpf_paciente: editingPaciente.cpf_paciente });
+        if (pacienteEmEdicao) {
+            mutacaoAtualizar.mutate({ ...dadosDoPaciente, cpf_paciente: pacienteEmEdicao.cpf_paciente });
         } else {
-            createMutation.mutate(pacienteData);
+            mutacaoCriar.mutate(dadosDoPaciente);
         }
     };
 
-    const columns = [
+    const colunas = [
         { title: 'Nome do Paciente', dataIndex: 'nome_paciente', key: 'nome_paciente' },
-        { title: 'CPF', dataIndex: 'cpf_paciente', key: 'cpf_paciente' },
+        {
+            title: 'CPF',
+            dataIndex: 'cpf_paciente',
+            key: 'cpf_paciente',
+            render: (texto) => formatarCPF(texto)
+        },
         { title: 'Plano de Saúde', dataIndex: 'plano_saude', key: 'plano_saude' },
-        { title: 'Data de Nascimento', dataIndex: 'data_nascimento', key: 'data_nascimento', render: (text) => text ? dayjs(text).format('DD/MM/YYYY') : '' },
+        { title: 'Data de Nascimento', dataIndex: 'data_nascimento', key: 'data_nascimento', render: (texto) => texto ? dayjs(texto).format('DD/MM/YYYY') : '' },
         {
             title: 'Ações', key: 'acoes',
-            render: (_, record) => (
+            render: (_, registro) => (
                 <div className="flex items-center gap-4">
-                    <button onClick={() => handleEdit(record)} className="text-blue-600 hover:text-blue-800"><EditOutlined className="text-xl" /></button>
-                    <button onClick={() => handleDelete(record)} className="text-red-500 hover:text-red-700"><DeleteOutlined className="text-xl" /></button>
+                    <button onClick={() => lidarComEdicao(registro)} className="text-[#1D8BCC] hover:text-blue-800"><EditOutlined className="text-xl" /></button>
+                    <button onClick={() => lidarComDelecao(registro)} className="text-red-500 hover:text-red-700"><DeleteOutlined className="text-xl" /></button>
                 </div>
             ),
         },
     ];
 
-    if (isError) {
-        return <span>Erro ao carregar dados: {error.message}</span>
+    if (ocorreuErro) {
+        return <span>Erro ao carregar dados: {erro.message}</span>
     }
 
     return (
         <div className="p-4 sm:p-6 lg:p-8 bg-gray-50 min-h-screen">
             <header className="flex justify-between items-center mb-6">
                 <h1 className="text-2xl md:text-3xl font-bold text-gray-800">Pacientes</h1>
-                <button onClick={handleAdd} className="flex items-center gap-2 bg-[#1D8BCC] text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-[#3693c9] transition-colors">
+                <button onClick={lidarComAdicionar} className="flex items-center gap-2 bg-[#1D8BCC] text-white font-semibold py-2 px-4 rounded-lg shadow-md hover:bg-[#3693c9] transition-colors">
                     <PlusOutlined />
                     <span>Novo Paciente</span>
                 </button>
             </header>
 
             <div className="bg-white p-4 rounded-lg shadow-md">
-                <Table columns={columns} dataSource={pacientes} loading={isLoading} rowKey="cpf_paciente" />
+                <Table columns={colunas} dataSource={pacientes} loading={carregandoPacientes} rowKey="cpf_paciente" />
             </div>
 
             <Drawer
-                title={editingPaciente ? 'Editar Paciente' : 'Adicionar Novo Paciente'}
+                title={pacienteEmEdicao ? 'Editar Paciente' : 'Adicionar Novo Paciente'}
                 width={720}
-                onClose={onDrawerClose}
-                open={isDrawerOpen}
+                onClose={aoFecharDrawer}
+                open={drawerAberto}
                 bodyStyle={{ paddingBottom: 80 }}
                 extra={
                     <div className="flex gap-2">
-                        <AntButton onClick={onDrawerClose}>Cancelar</AntButton>
-                        <AntButton onClick={() => form.submit()} type="primary" loading={createMutation.isPending || updateMutation.isPending}>
+                        <AntButton onClick={aoFecharDrawer}>Cancelar</AntButton>
+                        <AntButton onClick={() => form.submit()} type="primary" loading={mutacaoCriar.isPending || mutacaoAtualizar.isPending}>
                             Salvar
                         </AntButton>
                     </div>
                 }
             >
-                <Form layout="vertical" form={form} onFinish={onFormSubmit}>
+                <Form layout="vertical" form={form} onFinish={aoSubmeterFormulario}>
                     <Form.Item name="nome_paciente" label="Nome Completo" rules={[{ required: true, message: 'Por favor, insira o nome do paciente' }]}>
                         <Input placeholder="Insira o nome completo" />
                     </Form.Item>
-                    <Form.Item name="cpf_paciente" label="CPF" rules={[{ required: true, message: 'Por favor, insira o CPF' }, { pattern: /^\d{11}$/, message: 'O CPF deve conter exatamente 11 dígitos numéricos' }]}>
-                        <Input placeholder="Insira os 11 dígitos do CPF" disabled={!!editingPaciente} />
+
+                    <Form.Item
+                        name="cpf_paciente"
+                        label="CPF"
+                        rules={[
+                            { required: true, message: 'Por favor, insira o CPF' },
+                            {
+                                pattern: /^\d{3}\.\d{3}\.\d{3}-\d{2}$/,
+                                message: 'O CPF está incompleto'
+                            }
+                        ]}
+                    >
+                        <InputMask
+                            mask="999.999.999-99"
+                            maskChar={null}
+                            disabled={!!pacienteEmEdicao}
+                        >
+                            {(props) => <Input {...props} placeholder="000.000.000-00" />}
+                        </InputMask>
                     </Form.Item>
-                    <Form.Item name="plano_saude" label="Plano de Saúde" rules={[{ required: true, message: 'Por favor, insira o plano de saúde' }]}>
-                        <Input placeholder="Insira o nome do plano de saúde" />
+
+                    <Form.Item name="plano_saude" label="Plano de Saúde" rules={[{ required: true, message: 'Por favor, selecione o plano de saúde' }]}>
+                        <Select
+                            placeholder="Selecione um plano de saúde"
+                            loading={carregandoPlanos}
+                        >
+                            {planos?.map(plano => (
+                                <Select.Option key={plano.id_plano} value={plano.nome_plano}>
+                                    {plano.nome_plano}
+                                </Select.Option>
+                            ))}
+                        </Select>
                     </Form.Item>
+
                     <Form.Item name="data_nascimento" label="Data de Nascimento" rules={[{ required: true, message: 'Por favor, selecione a data de nascimento' }]}>
                         <DatePicker style={{ width: '100%' }} format="DD/MM/YYYY" />
                     </Form.Item>

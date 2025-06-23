@@ -1,9 +1,18 @@
+import InputMask from 'react-input-mask';
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Table, message, Modal, Drawer, Form, Input, DatePicker, Button as AntButton } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { fetchMedicos, createMedico, updateMedico, deleteMedico } from '../services';
 import dayjs from 'dayjs';
+
+const formatCPF = (cpf) => {
+    if (!cpf) return '';
+    const cpfDigits = cpf.replace(/\D/g, '');
+    if (cpfDigits.length !== 11) return cpf; 
+    return cpfDigits.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+};
+
 
 const Medicos = () => {
     const [isDrawerOpen, setIsDrawerOpen] = useState(false);
@@ -27,19 +36,19 @@ const Medicos = () => {
     const createMutation = useMutation({
         mutationFn: createMedico,
         onSuccess: () => onMutationSuccess('Médico criado com sucesso!'),
-        onError: (err) => message.error(`Erro ao criar médico: ${err.message}`),
+        onError: (err) => message.error(err.response?.data?.message || 'Erro ao criar médico'),
     });
 
     const updateMutation = useMutation({
         mutationFn: updateMedico,
         onSuccess: () => onMutationSuccess('Médico atualizado com sucesso!'),
-        onError: (err) => message.error(`Erro ao atualizar médico: ${err.message}`),
+        onError: (err) => message.error(err.response?.data?.message || 'Erro ao atualizar médico'),
     });
 
     const deleteMutation = useMutation({
         mutationFn: deleteMedico,
         onSuccess: () => onMutationSuccess('Médico deletado com sucesso!'),
-        onError: (err) => message.error(`Erro ao deletar médico: ${err.message}`),
+        onError: (err) => message.error(err.response?.data?.message || 'Erro ao deletar médico'),
     });
 
     const handleAdd = () => {
@@ -50,10 +59,12 @@ const Medicos = () => {
 
     const handleEdit = (record) => {
         setEditingMedico(record);
-        form.setFieldsValue({
+        const formattedRecord = {
             ...record,
+            cpf_medico: formatCPF(record.cpf_medico),
             data_nascimento: record.data_nascimento ? dayjs(record.data_nascimento) : null,
-        });
+        };
+        form.setFieldsValue(formattedRecord);
         setIsDrawerOpen(true);
     };
 
@@ -65,7 +76,7 @@ const Medicos = () => {
             okType: 'danger',
             cancelText: 'Cancelar',
             onOk: () => {
-                deleteMutation.mutate(record.cpf_medico);
+                deleteMutation.mutate(record.cpf_medico.replace(/\D/g, ''));
             },
         });
     };
@@ -79,7 +90,9 @@ const Medicos = () => {
     const onFormSubmit = (values) => {
         const medicoData = {
             ...values,
-            data_nascimento: values.data_nascimento.format('YYYY-MM-DD'),
+            cpf_medico: values.cpf_medico.replace(/\D/g, ''),
+            crm_medico: values.crm_medico.toUpperCase(),
+            data_nascimento: values.data_nascimento ? values.data_nascimento.format('YYYY-MM-DD') : null,
         };
 
         if (editingMedico) {
@@ -97,7 +110,10 @@ const Medicos = () => {
             title: 'CRM', dataIndex: 'crm_medico', key: 'crm_medico',
         },
         {
-            title: 'CPF', dataIndex: 'cpf_medico', key: 'cpf_medico',
+            title: 'CPF', 
+            dataIndex: 'cpf_medico', 
+            key: 'cpf_medico',
+            render: (text) => formatCPF(text) 
         },
         {
             title: 'Data de Nascimento', dataIndex: 'data_nascimento', key: 'data_nascimento', render: (text) => text ? dayjs(text).format('DD/MM/YYYY') : '',
@@ -106,7 +122,7 @@ const Medicos = () => {
             title: 'Ações', key: 'acoes',
             render: (_, record) => (
                 <div className="flex items-center gap-4">
-                    <button onClick={() => handleEdit(record)} className="text-blue-600 hover:text-blue-800"><EditOutlined className="text-xl" /></button>
+                    <button onClick={() => handleEdit(record)} className="text-[#1D8BCC] hover:text-blue-800"><EditOutlined className="text-xl" /></button>
                     <button onClick={() => handleDelete(record)} className="text-red-500 hover:text-red-700"><DeleteOutlined className="text-xl" /></button>
                 </div>
             ),
@@ -147,6 +163,7 @@ const Medicos = () => {
                 }
             >
                 <Form layout="vertical" form={form} onFinish={onFormSubmit}>
+                    {/* ... (outros Form.Items não mudaram) ... */}
                     <Form.Item
                         name="nome_medico"
                         label="Nome Completo"
@@ -161,12 +178,23 @@ const Medicos = () => {
                         rules={[
                             { required: true, message: 'Por favor, insira o CRM' },
                             {
-                                pattern: /^\d{5}[a-zA-Z]{2}$/,
-                                message: 'O CRM deve ter 5 números e 2 letras (ex: 12345SP)'
+                                pattern: /^\d{5}-[A-Z]{2}$/i,
+                                message: 'O CRM deve estar no formato 12345-SP'
                             }
                         ]}
                     >
-                        <Input placeholder="Insira o CRM no formato 12345SP" />
+                        <InputMask
+                            mask="99999-**"
+                            maskChar={null}
+                            onBlur={(e) => {
+                                const value = e.target.value.toUpperCase();
+                                form.setFieldsValue({ crm_medico: value });
+                            }}
+                        >
+                            {(inputProps) => (
+                                <Input {...inputProps} placeholder="Insira o CRM no formato 12345-SP" />
+                            )}
+                        </InputMask>
                     </Form.Item>
 
                     <Form.Item
@@ -175,12 +203,20 @@ const Medicos = () => {
                         rules={[
                             { required: true, message: 'Por favor, insira o CPF' },
                             {
-                                pattern: /^\d{11}$/,
-                                message: 'O CPF deve conter 11 dígitos numéricos'
+                                pattern: /^\d{3}\.\d{3}\.\d{3}-\d{2}$/,
+                                message: 'O CPF está incompleto'
                             }
                         ]}
                     >
-                        <Input placeholder="Insira os 11 dígitos do CPF" disabled={!!editingMedico} />
+                        <InputMask
+                            mask="999.999.999-99"
+                            maskChar={null}
+                            disabled={!!editingMedico}
+                        >
+                            {(inputProps) => (
+                                <Input {...inputProps} placeholder="000.000.000-00" />
+                            )}
+                        </InputMask>
                     </Form.Item>
 
                     <Form.Item
