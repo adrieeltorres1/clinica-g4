@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { Table, message, Modal, Drawer, Form, Input, Button as AntButton } from 'antd';
+// NOVO: Importado o InputNumber para o campo de preço
+import { Table, message, Modal, Drawer, Form, Input, Button as AntButton, InputNumber } from 'antd';
 import { PlusOutlined, EditOutlined, DeleteOutlined } from '@ant-design/icons';
 import { fetchPlanos, createPlano, updatePlano, deletePlano } from '../services';
 
@@ -47,11 +48,10 @@ const Planos = () => {
         setIsDrawerOpen(true);
     };
 
+    // ALTERADO: Agora preenche o formulário com todos os dados do registro, incluindo o preço
     const handleEdit = (record) => {
         setEditingPlano(record);
-        form.setFieldsValue({
-            nome_plano: record.nome_plano,
-        });
+        form.setFieldsValue(record); // Preenche nome_plano e preco automaticamente
         setIsDrawerOpen(true);
     };
 
@@ -75,16 +75,34 @@ const Planos = () => {
     };
 
     const onFormSubmit = (values) => {
+        // A conversão do preço para número é feita automaticamente pelo InputNumber
+        const dataToSend = {
+            ...values,
+            preco: parseFloat(values.preco) || 0, // Garante que é um número
+        }
+
         if (editingPlano) {
-            updateMutation.mutate({ id: editingPlano.id_plano, data: values });
+            updateMutation.mutate({ id: editingPlano.id_plano, data: dataToSend });
         } else {
-            createMutation.mutate(values);
+            createMutation.mutate(dataToSend);
         }
     };
 
+    // ALTERADO: Adicionada a coluna de Preço
     const columns = [
         { title: 'ID', dataIndex: 'id_plano', key: 'id_plano', width: '10%' },
         { title: 'Nome do Plano', dataIndex: 'nome_plano', key: 'nome_plano' },
+        {
+            title: 'Preço',
+            dataIndex: 'preco',
+            key: 'preco',
+            // Formata o número para o formato de moeda R$
+            render: (preco) =>
+                new Intl.NumberFormat('pt-BR', {
+                    style: 'currency',
+                    currency: 'BRL',
+                }).format(preco || 0),
+        },
         {
             title: 'Ações',
             key: 'acoes',
@@ -143,6 +161,21 @@ const Planos = () => {
                         rules={[{ required: true, message: 'Por favor, insira o nome do plano' }]}
                     >
                         <Input placeholder="Insira o nome do plano" />
+                    </Form.Item>
+
+                    {/* NOVO: Adicionado o campo de preço no formulário */}
+                    <Form.Item
+                        name="preco"
+                        label="Preço (R$)"
+                        rules={[{ required: true, message: 'Por favor, insira o preço' }]}
+                    >
+                        <InputNumber
+                            prefix="R$ "
+                            style={{ width: '100%' }}
+                            precision={2}
+                            step="0.10"
+                            placeholder="Ex: 89.90"
+                        />
                     </Form.Item>
                 </Form>
             </Drawer>
