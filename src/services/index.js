@@ -61,11 +61,39 @@ export const createPlano = async (planoData) => {
     return data;
 }
 
-
 export const updatePlano = async (id, planoData) => {
     const {data} = await API.put(`/planos/editarplanos/${id}`, planoData);
     return data;
 }
+
+export const fetchPacientesPorPlano = async () => {
+    const { data } = await API.get('/relatorios/pacientes-por-plano');
+    return data;
+};
+
+export const fetchNovosPacientesPorMes = async () => {
+  console.log('Buscando dados de novos pacientes por mês...');
+  const response = await fetch('http://localhost:8000/relatorios/novos-pacientes-mes'); 
+  if (!response.ok) {
+    console.error('Erro na resposta da API:', response.status);
+    throw new Error('Erro ao buscar dados de novos pacientes por mês');
+  }
+  const data = await response.json();
+  console.log('Resposta da API:', data);
+  return data;
+};
+
+export const fetchResumoIdades = async () => {
+  console.log('Buscando resumo de idades...');
+  const response = await fetch('/relatorios/resumo-idades');
+  if (!response.ok) {
+    throw new Error('Erro ao buscar resumo de idades');
+  }
+  const data = await response.json();
+  console.log('Resumo de idades recebido:', data);
+  return data;
+};
+
 
 export const deletePlano = async (nome_plano) => {
     const {data} = await API.delete('/planos/deletarplanos', {
