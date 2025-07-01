@@ -157,7 +157,7 @@ const Relatorio = () => {
                 <Col xs={24} lg={8}>
                     <div className="flex flex-col gap-4 h-full">
                         <Card variant="borderless" className="shadow-md text-center">
-                            <h3 className="text-lg font-semibold text-gray-700">Médocos com mais de 50 anos</h3>
+                            <h3 className="text-lg font-semibold text-gray-700">Médicos com mais de 50 anos</h3>
                             {carregandoResumo ? (
                                 <Spin />
                             ) : erroResumo ? (
