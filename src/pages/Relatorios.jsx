@@ -50,10 +50,6 @@ const Relatorio = () => {
   queryFn: fetchResumoIdades,
 });
 
-console.log('Resumo de idades:', resumoIdades);
-console.log('Erro no resumo?', erroResumo, erroResumoDetalhe);
-
-
 
     const planosOrdenados = planos?.slice().sort((a, b) => a.preco - b.preco) || [];
 
