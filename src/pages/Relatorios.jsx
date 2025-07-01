@@ -53,11 +53,11 @@ const Relatorio = () => {
 
     const planosOrdenados = planos?.slice().sort((a, b) => a.preco - b.preco) || [];
 
-    const configGraficoColunas = {
+        const configGraficoColunas = {
         data: planosOrdenados,
         xField: 'nome_plano',
         yField: 'preco',
-        color: '#1D8BCC',
+        colorField: 'nome_plano', 
         label: {
             position: 'top',
             style: { fill: '#666' },
@@ -73,6 +73,7 @@ const Relatorio = () => {
             },
         },
     };
+
 
     const configGraficoPizza = {
         data: dadosPizza || [],
@@ -98,18 +99,6 @@ const Relatorio = () => {
         point: {
             size: 5,
             shape: 'circle',
-        },
-        tooltip: {
-            formatter: (datum) => ({
-                name: 'Novos Pacientes',
-                value: datum.novos_pacientes,
-            }),
-        },
-        xAxis: {
-            title: { text: 'Mês' },
-        },
-        yAxis: {
-            title: { text: 'Quantidade' },
         },
     };
 
