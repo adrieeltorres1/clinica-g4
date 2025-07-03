@@ -4,6 +4,8 @@ import { MdMedicalServices } from "react-icons/md";
 import { FaRegCalendarDays } from "react-icons/fa6";
 import { FaUserDoctor } from "react-icons/fa6";
 import { TbReportSearch } from "react-icons/tb";
+import { FaStaffSnake } from "react-icons/fa6";
+
 
 
 const PageHome = () => {
@@ -16,7 +18,7 @@ const PageHome = () => {
                 <nav className="grid gap-3 mt-6 *:leading-[40px]  *:pl-4 *:rounded *:text-[#424242] *:duration-150 *:font-semibold">
                     <NavLink
                         end
-                        className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-[#1D8BCC] hover:text-white [&.active]:bg-[#1D8BCC] [&.active]:text-white"
+                        className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-[#1d8bcc] hover:text-white [&.active]:bg-[#1d8bcc] [&.active]:text-white"
                         to="/relatorios"
                     >
                         <TbReportSearch className="text-xl" />
@@ -53,6 +55,14 @@ const PageHome = () => {
                     >
                         <MdMedicalServices className="text-xl" />
                         Planos
+                    </NavLink>
+                    <NavLink
+                        end
+                        className="flex items-center  gap-2 px-4 py-2 text-gray-700 hover:bg-[#1D8BCC] hover:text-white [&.active]:bg-[#1D8BCC] [&.active]:text-white"
+                        to=""
+                    >
+                        <FaStaffSnake  className="text-xl" />
+                        Especialidades
                     </NavLink>
                 </nav>
             </header>

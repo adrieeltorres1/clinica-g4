@@ -9,6 +9,7 @@ import Pacientes from "./pages/Pacientes";
 import Planos from "./pages/Planos";
 import Relatorios from './pages/relatorios';
 import Agendamentos from './pages/Agendamentos';
+import Especialidades from './pages/Especialidades';
 
 dayjs.locale('pt-br');
 
@@ -23,6 +24,7 @@ const App = () => {
             <Route path="/planos" element={<Planos />} />
             <Route path="/relatorios" element={<Relatorios />} />
             <Route path="/agendamentos" element={<Agendamentos />} />
+            <Route path="/especialidades" element={<Especialidades />} />
           </Route>
         </Routes>
       </BrowserRouter>
