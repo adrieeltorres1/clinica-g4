@@ -103,3 +103,8 @@ export const deletePlano = async (nome_plano) => {
     });
     return data;
 }
+
+export const fetchEspecialidades = async () => {
+    const { data } = await API.get('/especialidades');
+    return data;
+};
