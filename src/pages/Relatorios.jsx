@@ -110,7 +110,7 @@ const Relatorio = () => {
                 <Col xs={24} lg={12}>
                     <Card title="Preços por Plano de Saúde" variant="borderless" className="shadow-md h-full">
                         {carregandoPlanos ? (
-                            <div className="flex justify-center items-center h-96">
+                            <div className="flex justify-center items-center h-96 font">
                                 <Spin size="large" />
                             </div>
                         ) : (
