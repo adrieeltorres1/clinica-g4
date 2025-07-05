@@ -15,7 +15,7 @@ const PageHome = () => {
                 <div className="flex justify-center">
                     <img src="imgs/logo_saude.png" alt="" className="w-[100px]" />
                 </div>
-                <nav className="grid gap-3 mt-6 *:leading-[40px]  *:pl-4 *:rounded *:text-[#424242] *:duration-150 *:font-semibold">
+                <nav className="grid gap-3 mt-6 *:leading-[40px] *:pl-4 *:rounded *:text-[#424242] *:duration-150 *:font-semibold *:text-lg">
                     <NavLink
                         end
                         className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-[#1d8bcc] hover:text-white [&.active]:bg-[#1d8bcc] [&.active]:text-white"
@@ -50,7 +50,7 @@ const PageHome = () => {
                     </NavLink>
                     <NavLink
                         end
-                        className="flex items-center  gap-2 px-4 py-2 text-gray-700 hover:bg-[#1D8BCC] hover:text-white [&.active]:bg-[#1D8BCC] [&.active]:text-white"
+                        className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-[#1D8BCC] hover:text-white [&.active]:bg-[#1D8BCC] [&.active]:text-white"
                         to="/planos"
                     >
                         <MdMedicalServices className="text-xl" />
@@ -59,7 +59,7 @@ const PageHome = () => {
                     <NavLink
                         end
                         className="flex items-center  gap-2 px-4 py-2 text-gray-700 hover:bg-[#1D8BCC] hover:text-white [&.active]:bg-[#1D8BCC] [&.active]:text-white"
-                        to=""
+                        to="/especialidades"
                     >
                         <FaStaffSnake  className="text-xl" />
                         Especialidades
