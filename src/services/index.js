@@ -108,3 +108,18 @@ export const fetchEspecialidades = async () => {
     const { data } = await API.get('/especialidades');
     return data;
 };
+
+export const createEspecialidade = async (especialidadeData) => {
+    const { data } = await API.post('/especialidades', especialidadeData);
+    return data;
+};
+
+export const updateEspecialidade = async ({ id, data }) => {
+    const response = await API.put(`/especialidades/${id}`, data);
+    return response.data;
+};
+
+export const deleteEspecialidade = async (id) => {
+    const { data } = await API.delete(`/especialidades/${id}`);
+    return data;
+};
