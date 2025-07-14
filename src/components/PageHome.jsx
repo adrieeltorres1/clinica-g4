@@ -5,6 +5,7 @@ import { FaRegCalendarDays } from "react-icons/fa6";
 import { FaUserDoctor } from "react-icons/fa6";
 import { TbReportSearch } from "react-icons/tb";
 import { FaStaffSnake } from "react-icons/fa6";
+import { CheckCircle } from "lucide-react";
 
 
 
@@ -27,10 +28,18 @@ const PageHome = () => {
                     <NavLink
                         end
                         className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-[#1D8BCC] hover:text-white [&.active]:bg-[#1D8BCC] [&.active]:text-white"
+                        to="/consultas-agendadas"
+                    >
+                        <FaRegCalendarDays className="text-xl" />
+                        Agendamentos
+                    </NavLink>
+                    <NavLink
+                        end
+                        className="flex items-center gap-2 px-4 py-2 text-gray-700 hover:bg-[#1D8BCC] hover:text-white [&.active]:bg-[#1D8BCC] [&.active]:text-white"
                         to="/agendamentos"
                     >
-                        <FaRegCalendarDays  className="text-xl" />
-                        Agendamentos
+                        <CheckCircle className="text-xl" />
+                        Marcar Consulta
                     </NavLink>
                     <NavLink
                         end
@@ -61,7 +70,7 @@ const PageHome = () => {
                         className="flex items-center  gap-2 px-4 py-2 text-gray-700 hover:bg-[#1D8BCC] hover:text-white [&.active]:bg-[#1D8BCC] [&.active]:text-white"
                         to="/especialidades"
                     >
-                        <FaStaffSnake  className="text-xl" />
+                        <FaStaffSnake className="text-xl" />
                         Especialidades
                     </NavLink>
                 </nav>

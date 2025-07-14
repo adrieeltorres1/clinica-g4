@@ -113,8 +113,17 @@ const Pacientes = () => {
             key: 'cpf_paciente',
             render: (texto) => formatarCPF(texto)
         },
-        { title: 'Plano de Saúde', dataIndex: 'plano_saude', key: 'plano_saude' },
-        { title: 'Data de Nascimento', dataIndex: 'data_nascimento', key: 'data_nascimento', render: (texto) => texto ? dayjs(texto).format('DD/MM/YYYY') : '' },
+        {
+            title: 'Plano de Saúde',
+            key: 'plano',
+            render: (_, record) => record.plano?.nome_plano || 'Não definido',
+        },
+
+        {
+            title: 'Data de Nascimento',
+            dataIndex: 'data_nascimento',
+            key: 'data_nascimento', render: (texto) => texto ? dayjs(texto).format('DD/MM/YYYY') : ''
+        },
         {
             title: 'Ações', key: 'acoes',
             render: (_, registro) => (
@@ -183,19 +192,16 @@ const Pacientes = () => {
                             {(props) => <Input {...props} placeholder="000.000.000-00" />}
                         </InputMask>
                     </Form.Item>
-
-                    <Form.Item name="plano_saude" label="Plano de Saúde" rules={[{ required: true, message: 'Por favor, selecione o plano de saúde' }]}>
-                        <Select
-                            placeholder="Selecione um plano de saúde"
-                            loading={carregandoPlanos}
-                        >
+                    <Form.Item name="plano_id" label="Plano de Saúde" rules={[{ required: true, message: 'Por favor, selecione o plano de saúde' }]}>
+                        <Select placeholder="Selecione um plano de saúde" loading={carregandoPlanos}>
                             {planos?.map(plano => (
-                                <Select.Option key={plano.id_plano} value={plano.nome_plano}>
+                                <Select.Option key={plano.id_plano} value={plano.id_plano}>
                                     {plano.nome_plano}
                                 </Select.Option>
                             ))}
                         </Select>
                     </Form.Item>
+
 
                     <Form.Item name="data_nascimento" label="Data de Nascimento" rules={[{ required: true, message: 'Por favor, selecione a data de nascimento' }]}>
                         <DatePicker style={{ width: '100%' }} format="DD/MM/YYYY" />

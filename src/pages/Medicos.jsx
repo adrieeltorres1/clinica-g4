@@ -112,10 +112,11 @@ const Medicos = () => {
         },
         {
             title: 'Especialidade',
-            dataIndex: 'especialidades',
+            dataIndex: 'especialidade',
             key: 'especialidade',
-            render: (especialidades) => especialidades?.nome_especialidade || 'Não definida',
+            render: (_, record) => record.especialidade?.nome_especialidade || 'Não definida',
         },
+
         {
             title: 'CRM', dataIndex: 'crm_medico', key: 'crm_medico',
         },

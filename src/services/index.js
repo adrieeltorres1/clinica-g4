@@ -123,3 +123,13 @@ export const deleteEspecialidade = async (id) => {
     const { data } = await API.delete(`/especialidades/${id}`);
     return data;
 };
+
+export const buscarTotalConsultas = async () => {
+  try {
+    const resposta = await axios.get(`${BASE_URL}/consultas`);
+    return resposta.data;
+  } catch (error) {
+    console.error('Erro ao buscar agendamentos:', error);
+    return [];
+  }
+};
