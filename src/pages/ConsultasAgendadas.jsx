@@ -1,4 +1,5 @@
-import { useQuery } from '@tanstack/react-query';
+import { DeleteOutlined } from '@ant-design/icons';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import axios from 'axios';
 import { useState } from 'react';
 
@@ -6,13 +7,27 @@ const ConsultasAgendadas = () => {
   const [filtroEspecialidade, setFiltroEspecialidade] = useState('');
   const [filtroMedico, setFiltroMedico] = useState('');
   const [filtroData, setFiltroData] = useState('');
+  const queryClient = useQueryClient();
 
   const { data: consultas, isLoading, isError } = useQuery({
     queryKey: ['consultas'],
     queryFn: async () => {
       const res = await axios.get('http://localhost:8000/disponibilidades/consultas');
-
       return res.data;
+    }
+  });
+
+  const excluirConsulta = useMutation({
+    mutationFn: async (id_consulta) => {
+      await axios.delete(`http://localhost:8000/disponibilidades/consultas/${id_consulta}`);
+
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['consultas'] });
+      alert('Consulta excluída com sucesso!');
+    },
+    onError: () => {
+      alert('Erro ao excluir a consulta.');
     }
   });
 
@@ -25,17 +40,17 @@ const ConsultasAgendadas = () => {
 
   const consultasFiltradas = Array.isArray(consultas)
     ? consultas.filter((c) => {
-        const especialidadeOK = filtroEspecialidade
-          ? c.medico?.especialidade?.nome_especialidade === filtroEspecialidade
-          : true;
-        const medicoOK = filtroMedico
-          ? c.medico?.nome_medico === filtroMedico
-          : true;
-        const dataOK = filtroData
-          ? new Date(c.data_consulta).toISOString().slice(0, 10) === filtroData
-          : true;
-        return especialidadeOK && medicoOK && dataOK;
-      })
+      const especialidadeOK = filtroEspecialidade
+        ? c.medicos?.especialidade?.nome_especialidade === filtroEspecialidade
+        : true;
+      const medicoOK = filtroMedico
+        ? c.medicos?.nome_medico === filtroMedico
+        : true;
+      const dataOK = filtroData
+        ? new Date(c.data_consulta).toISOString().slice(0, 10) === filtroData
+        : true;
+      return especialidadeOK && medicoOK && dataOK;
+    })
     : [];
 
   if (isLoading) {
@@ -65,7 +80,7 @@ const ConsultasAgendadas = () => {
         >
           <option value="">Filtrar por médico</option>
           {Array.isArray(consultas) &&
-            [...new Set(consultas.map(c => c.medico?.nome_medico).filter(Boolean))].map((nome) => (
+            [...new Set(consultas.map(c => c.medicos?.nome_medico).filter(Boolean))].map((nome) => (
               <option key={nome} value={nome}>{nome}</option>
             ))}
         </select>
@@ -77,7 +92,7 @@ const ConsultasAgendadas = () => {
         >
           <option value="">Filtrar por especialidade</option>
           {Array.isArray(consultas) &&
-            [...new Set(consultas.map(c => c.medico?.especialidade?.nome_especialidade).filter(Boolean))].map((nome) => (
+            [...new Set(consultas.map(c => c.medicos?.especialidade?.nome_especialidade).filter(Boolean))].map((nome) => (
               <option key={nome} value={nome}>{nome}</option>
             ))}
         </select>
@@ -88,14 +103,31 @@ const ConsultasAgendadas = () => {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
           {consultasFiltradas.map((c) => (
-            <div key={c.id_consulta} className="bg-white rounded-lg shadow-md p-4 border-l-4 border-orange-500">
+            <div
+              key={c.id_consulta}
+              className="bg-white rounded-lg shadow-md p-4 border-l-4"
+              style={{ borderColor: '#1D8BCC' }}
+            >
               <h3 className="text-lg font-semibold text-gray-800 mb-2">
-                {c.paciente?.nome_paciente || 'Paciente não informado'}
+                {c.pacientes?.nome_paciente || 'Paciente não informado'}
               </h3>
-              <p><strong>Especialidade:</strong> {c.medico?.especialidade?.nome_especialidade || '—'}</p>
-              <p><strong>Médico:</strong> {c.medico?.nome_medico || '—'}</p>
+              <p><strong>Especialidade:</strong> {c.medicos?.especialidade?.nome_especialidade || '—'}</p>
+              <p><strong>Médico:</strong> {c.medicos?.nome_medico || '—'}</p>
               <p><strong>Data:</strong> {formatarData(c.data_consulta)}</p>
               <p><strong>Horário:</strong> {formatarHora(c.data_consulta)}</p>
+              <div className='flex justify-end'>
+                   <button
+                onClick={() => {
+                  const confirmar = window.confirm('Tem certeza que deseja excluir esta consulta?');
+                  if (confirmar) excluirConsulta.mutate(c.id_consulta);
+                }}
+                className="mt-4 px-4 py-2 bg-red-500 hover:bg-red-600 text-white rounded-md"
+              >
+                <DeleteOutlined/>
+              </button>
+
+              </div>
+             
             </div>
           ))}
         </div>
@@ -105,3 +137,5 @@ const ConsultasAgendadas = () => {
 };
 
 export default ConsultasAgendadas;
+
+// DeleteOutlined

@@ -64,7 +64,12 @@ export default function Agendamentos() {
         },
         onSuccess: () => {
             alert("Consulta agendada com sucesso!");
+            setSelectedPatient('');
+            setSelectedDoctor('');
+            setSelectedDate('');
+            setSelectedTime('');
         },
+
         onError: () => {
             alert("Erro ao agendar consulta.");
         }
